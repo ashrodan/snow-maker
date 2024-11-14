@@ -1,5 +1,24 @@
 # Snow-Maker Design Document
 
+## Project Setup
+
+### Directory Structure
+- `docs/`: Contains design documents and other documentation.
+- `src/`: Contains the source code for the Snow-Maker Python wrapper.
+- `tests/`: Contains test cases and testing framework setup.
+- `config/`: Contains configuration files for defining Snowflake resources.
+- `scripts/`: Contains CLI tools and automation scripts.
+
+### Dependencies
+- Use a `requirements.txt` file to list Python dependencies, including the Snowflake Python SDK.
+- Consider using a virtual environment for dependency management.
+
+### Version Control
+- Use Git for version control, with a clear branching strategy (e.g., `main`, `develop`, feature branches).
+
+### CI/CD
+- Set up a CI/CD pipeline to automate testing and deployment processes.
+
 ## Overview
 Snow-Maker is a Python wrapper for Snowflake, designed to streamline the configuration and provisioning of Snowflake components programmatically. By abstracting complex operations into simple configurations, Snow-Maker enables developers to efficiently manage Snowflake resources, automate workflows, and integrate seamlessly with existing data pipelines.
 
