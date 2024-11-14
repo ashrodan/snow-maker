@@ -1,7 +1,7 @@
 # Snow-Maker Design Document
 
 ## Overview
-Snow-Maker is a project aimed at creating artificial snow using advanced technology. This document outlines the initial design and architecture of the system.
+Snow-Maker is a Python wrapper for Snowflake, designed to simplify the definition and provisioning of Snowflake components programmatically through configuration. This document outlines the initial design and architecture of the system.
 
 ## Components
 1. **Snow Generation Unit**: The core component responsible for producing snow.
