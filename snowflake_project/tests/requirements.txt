@@ -1,0 +1,4 @@
+pytest
+snowflake
+python-dotenv
+mock  # For potential mocking in more advanced tests

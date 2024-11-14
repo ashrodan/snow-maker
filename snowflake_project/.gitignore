@@ -1,0 +1,55 @@
+# Environment Files
+.env.dev
+.env.tst
+.env.prd
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE Specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Sensitive Information
+*.key
+*.pem
+*.cert
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Temporary files
+*.swp
+*~
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+.coverage
+htmlcov/

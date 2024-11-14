@@ -1,0 +1,21 @@
+# Environment files
+.env.dev
+.env.tst
+.env.prd
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+
+# IDE specific
+.vscode/
+.idea/
+
+
+.env
