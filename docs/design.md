@@ -11,7 +11,21 @@ Snow-Maker is a Python wrapper for Snowflake, designed to streamline the configu
 - **Extensibility**: Design a plugin system to allow custom extensions and integrations.
 - **Security Features**: Incorporate robust security measures, including role-based access control and data encryption.
 
-## Core Features
+## Configurable Components
+- **Databases**: Manage and configure databases to store and organize data.
+- **Schemas**: Define schemas within databases to structure data.
+- **Tables**: Create and manage tables to store data records.
+- **Views**: Set up views for specific data perspectives.
+- **Roles**: Configure roles for access control and permissions.
+- **Users**: Manage user accounts and authentication.
+- **Warehouses**: Provision and manage virtual warehouses for compute resources.
+- **Resource Monitors**: Set up resource monitors to track and control resource usage.
+- **Tasks**: Automate and schedule tasks for data processing.
+- **Streams**: Implement streams for change data capture.
+- **Pipes**: Configure pipes for continuous data loading.
+- **File Formats**: Define file formats for data import/export.
+- **Stages**: Manage stages for data loading and unloading.
+- **Network Policies**: Set up network policies for security and access control.
 - **Snowflake Core Artifacts**: Enable the creation and management of essential Snowflake components such as databases, roles, warehouses, and general RBAC (Role-Based Access Control).
 - **Testing and Validation**: Provide tools to test and validate changes to Snowflake configurations, ensuring reliability and consistency.
 - **Deployment with Certainty**: Facilitate a seamless deployment process that allows users to apply changes with confidence.
