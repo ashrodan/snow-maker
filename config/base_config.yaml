@@ -1,0 +1,16 @@
+databases:
+  - name: ANALYTICS
+    comment: Analytics production database
+    data_retention_time_in_days: 30
+    default_ddl_collation: UTF8
+    log_level: INFO
+  - name: STAGING
+    comment: Staging database
+    data_retention_time_in_days: 14
+
+warehouses:
+  - name: COMPUTE_WH
+    size: MEDIUM
+    auto_suspend: 300
+    auto_resume: true
+    comment: General compute warehouse

@@ -1,15 +1,28 @@
 import os
 import argparse
 import sys
+import logging
 from dotenv import load_dotenv
+from snowflake_declarative import SnowflakeState
+# from models.database import SnowflakeDatabase, SnowflakeState, list_databases
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,  # Set to INFO to capture info and warning messages
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # Add console output
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # Dynamically import Snowflake package
 try:
-    import snowflake
+    # import snowflake
     from snowflake.core import Root
-    from snowflake.core.session import Session
+    from snowflake.snowpark import Session
 except ImportError:
-    print("Error: Please install the Snowflake package using 'pip install snowflake'")
+    logger.error("Error: Please install the Snowflake package using 'pip install snowflake'")
     raise
 
 def load_env_config(env='dev'):
@@ -74,11 +87,11 @@ def create_snowflake_session(env='dev'):
         # Create session using Session.builder
         session = Session.builder.configs(connection_parameters).create()
         
-        print(f"Successfully created Snowflake session for {env.upper()} environment")
+        logger.info(f"Successfully created Snowflake session for {env.upper()} environment")
         return session
     
     except Exception as e:
-        print(f"Error creating Snowflake session: {e}")
+        logger.error(f"Error creating Snowflake session: {e}")
         raise
 
 def get_snowflake_root(session):
@@ -90,11 +103,12 @@ def get_snowflake_root(session):
     """
     try:
         root = Root(session)
-        print("Successfully created Snowflake Root resource")
+        logger.info("Successfully created Snowflake Root resource")
+
         return root
     
     except Exception as e:
-        print(f"Error creating Snowflake Root resource: {e}")
+        logger.error(f"Error creating Snowflake Root resource: {e}")
         raise
 
 def parse_arguments():
@@ -125,18 +139,39 @@ def main():
         # Create root resource
         root = get_snowflake_root(session)
         
+        from snowflake.core.database import Database
+        databases = root.databases #['ONYX_POC'].database_roles
+        # new_database = Database(
+        #     name="my_new_database",
+        #     comment="this is my new database to prototype a new feature in",
+        #     )
+        # databases.create(new_database)
+        # List databases
+        logger.info("Listing databases:")
+        print(databases)
+        for database in databases.iter():
+            logger.info(f"Database: {database.name}, Comment: {database.comment}, Owner: {database.owner}")
+
+        
+        def manage_snowflake_objects(root, config_path: str, dry_run: bool = True):
+            state_manager = SnowflakeState(root)
+            logger.info(f"{'Dry run: ' if dry_run else ''}Applying Snowflake configurations...")
+            state_manager.apply_configuration(config_path, dry_run=dry_run)
+
+        manage_snowflake_objects(root, "config/base_config.yaml", dry_run=True)
+
         # Optional: List databases if requested
         if args.list_databases:
             try:
                 databases = root.databases.list()
-                print("\nAvailable Databases:")
+                logger.info("\nAvailable Databases:")
                 for db in databases:
-                    print(f"- {db.name}")
+                    logger.info(f"- {db.name}")
             except Exception as e:
-                print(f"Error listing databases: {e}")
+                logger.error(f"Error listing databases: {e}")
         
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         sys.exit(1)
     finally:
         # Close the session if it exists

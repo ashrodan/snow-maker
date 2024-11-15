@@ -1,2 +1,4 @@
 python-dotenv
 snowflake
+snowflake-snowpark-python
+pydantic
