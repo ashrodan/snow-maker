@@ -13,6 +13,12 @@ def generate_markdown_report(changes_file='changes.json', output_file='change_re
     with open(changes_file, 'r') as f:
         changes_data = json.load(f)
 
+    # Get GitHub context from environment variables
+    github_workflow = os.environ.get('GITHUB_WORKFLOW', 'Unknown Workflow')
+    github_repository = os.environ.get('GITHUB_REPOSITORY', 'Unknown Repository')
+    github_ref = os.environ.get('GITHUB_REF', 'Unknown Ref')
+    github_sha = os.environ.get('GITHUB_SHA', 'Unknown Commit')
+
     # Prepare markdown content
     markdown_content = f"""# 🔄 Snowflake Configuration Change Report
 
@@ -41,10 +47,10 @@ def generate_markdown_report(changes_file='changes.json', output_file='change_re
 **Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ## 📋 Workflow Context
-- **Workflow Run:** ${{github.workflow}}
-- **Repository:** ${{github.repository}}
-- **Ref:** ${{github.ref}}
-- **Commit SHA:** ${{github.sha}}
+- **Workflow Run:** {github_workflow}
+- **Repository:** {github_repository}
+- **Ref:** {github_ref}
+- **Commit SHA:** {github_sha}
 """
 
     # Write Markdown to file
