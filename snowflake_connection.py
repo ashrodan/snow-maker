@@ -2,40 +2,34 @@ import os
 import argparse
 import sys
 import logging
+import json
 from dotenv import load_dotenv
-from snowflake_declarative import SnowflakeState
-# from models.database import SnowflakeDatabase, SnowflakeState, list_databases
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,  # Set to INFO to capture info and warning messages
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout)  # Add console output
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
 
 # Dynamically import Snowflake package
 try:
-    # import snowflake
     from snowflake.core import Root
     from snowflake.snowpark import Session
 except ImportError:
     logger.error("Error: Please install the Snowflake package using 'pip install snowflake'")
     raise
 
+# Import Snowflake Declarative components
+from snowflake_declarative import SnowflakeState
+
 def load_env_config(env='dev'):
-    """
-    Load environment-specific configuration.
-    
-    :param env: Environment ('dev', 'tst', or 'prd')
-    :return: Path to the environment-specific .env file
-    """
-    # Prioritize environment-specific .env files in config/
+    """Load environment-specific configuration"""
     env_file = f'config/{env}/.env'
     
-    # Fallback to root .env files with environment suffix
     if not os.path.exists(env_file):
         env_file = f'.env.{env}'
     
@@ -46,13 +40,7 @@ def load_env_config(env='dev'):
     return env_file
 
 def get_connection_parameters(env='dev'):
-    """
-    Retrieve Snowflake connection parameters from environment variables.
-    
-    :param env: Environment to load configuration for
-    :return: Dictionary of connection parameters
-    """
-    # Load the specific environment configuration
+    """Retrieve Snowflake connection parameters from environment variables"""
     load_env_config(env)
     
     connection_parameters = {
@@ -65,7 +53,6 @@ def get_connection_parameters(env='dev'):
         'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE')
     }
     
-    # Remove None values and validate required parameters
     connection_parameters = {k: v for k, v in connection_parameters.items() if v is not None}
     
     if not all(key in connection_parameters for key in ['account', 'user', 'password']):
@@ -74,17 +61,9 @@ def get_connection_parameters(env='dev'):
     return connection_parameters
 
 def create_snowflake_session(env='dev'):
-    """
-    Create a Snowflake session using connection parameters.
-    
-    :param env: Environment to connect to
-    :return: Snowflake Session object
-    """
+    """Create a Snowflake session using connection parameters"""
     try:
-        # Get connection parameters
         connection_parameters = get_connection_parameters(env)
-        
-        # Create session using Session.builder
         session = Session.builder.configs(connection_parameters).create()
         
         logger.info(f"Successfully created Snowflake session for {env.upper()} environment")
@@ -95,16 +74,10 @@ def create_snowflake_session(env='dev'):
         raise
 
 def get_snowflake_root(session):
-    """
-    Create the root resource for Snowflake API interactions.
-    
-    :param session: Snowflake Session object
-    :return: Root resource
-    """
+    """Create the root resource for Snowflake API interactions"""
     try:
         root = Root(session)
         logger.info("Successfully created Snowflake Root resource")
-
         return root
     
     except Exception as e:
@@ -112,19 +85,20 @@ def get_snowflake_root(session):
         raise
 
 def parse_arguments():
-    """
-    Parse command-line arguments.
-    
-    :return: Parsed arguments
-    """
+    """Parse command-line arguments"""
     parser = argparse.ArgumentParser(description='Snowflake Connection Script')
     parser.add_argument('-e', '--env', 
                         choices=['dev', 'tst', 'prd'], 
                         default='dev', 
                         help='Environment to connect to (default: dev)')
-    parser.add_argument('-l', '--list-databases', 
+    parser.add_argument('-c', '--config', 
+                        default='config/base_config.yaml', 
+                        help='Path to configuration file')
+    parser.add_argument('--dry-run', 
                         action='store_true', 
-                        help='List available databases')
+                        help='Perform a dry run without making changes')
+    parser.add_argument('--output', 
+                        help='Export change report to a JSON file')
     
     return parser.parse_args()
 
@@ -139,36 +113,21 @@ def main():
         # Create root resource
         root = get_snowflake_root(session)
         
-        from snowflake.core.database import Database
-        databases = root.databases #['ONYX_POC'].database_roles
-        # new_database = Database(
-        #     name="my_new_database",
-        #     comment="this is my new database to prototype a new feature in",
-        #     )
-        # databases.create(new_database)
-        # List databases
-        logger.info("Listing databases:")
-        print(databases)
-        for database in databases.iter():
-            logger.info(f"Database: {database.name}, Comment: {database.comment}, Owner: {database.owner}")
-
-        
+        # Manage Snowflake objects and generate change report
         def manage_snowflake_objects(root, config_path: str, dry_run: bool = True):
             state_manager = SnowflakeState(root)
             logger.info(f"{'Dry run: ' if dry_run else ''}Applying Snowflake configurations...")
-            state_manager.apply_configuration(config_path, dry_run=dry_run)
+            change_report = state_manager.apply_configuration(config_path, dry_run=dry_run)
+            return change_report
 
-        manage_snowflake_objects(root, "config/base_config.yaml", dry_run=True)
-
-        # Optional: List databases if requested
-        if args.list_databases:
-            try:
-                databases = root.databases.list()
-                logger.info("\nAvailable Databases:")
-                for db in databases:
-                    logger.info(f"- {db.name}")
-            except Exception as e:
-                logger.error(f"Error listing databases: {e}")
+        # Generate change report
+        change_report = manage_snowflake_objects(root, args.config, args.dry_run)
+        
+        # Export change report if requested
+        if args.output:
+            with open(args.output, 'w') as f:
+                json.dump(change_report.to_dict(), f, indent=2)
+            logger.info(f"Change report exported to {args.output}")
         
     except Exception as e:
         logger.error(f"An error occurred: {e}")

@@ -1,12 +1,13 @@
 databases:
   - name: ANALYTICS
     comment: Analytics production database
-    data_retention_time_in_days: 30
+    data_retention_time_in_days: 1
+    # data_retention_time_in_days: 30
     default_ddl_collation: UTF8
     log_level: INFO
   - name: STAGING
     comment: Staging database
-    data_retention_time_in_days: 14
+    data_retention_time_in_days: 1
 
 warehouses:
   - name: COMPUTE_WH

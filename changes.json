@@ -1,0 +1,56 @@
+{
+  "total_objects": 3,
+  "objects_processed": 3,
+  "objects_created": 2,
+  "objects_updated": 1,
+  "objects_no_change": 0,
+  "objects_with_errors": 0,
+  "changes": {
+    "database": [
+      {
+        "name": "ANALYTICS",
+        "type": "database",
+        "status": "CREATED",
+        "differences": null,
+        "error": null
+      },
+      {
+        "name": "STAGING",
+        "type": "database",
+        "status": "CREATED",
+        "differences": null,
+        "error": null
+      }
+    ],
+    "warehouse": [
+      {
+        "name": "COMPUTE_WH",
+        "type": "warehouse",
+        "status": "UPDATED",
+        "differences": [
+          {
+            "field": "size",
+            "expected": "MEDIUM",
+            "actual": "X-SMALL"
+          },
+          {
+            "field": "auto_suspend",
+            "expected": 300,
+            "actual": 600
+          },
+          {
+            "field": "auto_resume",
+            "expected": true,
+            "actual": "TRUE"
+          },
+          {
+            "field": "comment",
+            "expected": "GENERAL COMPUTE WAREHOUSE",
+            "actual": null
+          }
+        ],
+        "error": null
+      }
+    ]
+  }
+}

@@ -1,13 +1,11 @@
 from typing import Dict, List, Any
 import yaml
 import logging
+import sys
 from ..models.base import SnowflakeObject
 from ..handlers.base import SnowflakeObjectHandler
 from ..models.differences import ObjectDifference
-from ..models.database import SnowflakeDatabase
-from ..models.warehouse import SnowflakeWarehouse
-from ..handlers.database import DatabaseHandler
-from ..handlers.warehouse import WarehouseHandler
+from ..models.change_report import ChangeReport, ObjectChangeEntry, ChangeStatus
 
 class SnowflakeState:
     """Manages the desired state of Snowflake objects"""
@@ -63,12 +61,15 @@ class SnowflakeState:
 
         return differences
 
-    def apply_configuration(self, config_path: str, dry_run: bool = True) -> None:
-        """Apply configurations from YAML"""
+    def apply_configuration(self, config_path: str, dry_run: bool = True) -> ChangeReport:
+        """Apply configurations from YAML and generate a comprehensive change report"""
+        # Initialize change report
+        change_report = ChangeReport()
+        
+        # Load configurations
         configs = self.load_yaml_config(config_path)
         
         for obj_type, objects in configs.items():
-            print(obj_type)
             handler = self.handlers.get(obj_type)
             if not handler:
                 self.logger.warning(f"No handler found for object type: {obj_type}")
@@ -76,29 +77,63 @@ class SnowflakeState:
 
             for obj in objects:
                 try:
+                    # Check if object exists
                     existing = handler.get_existing(obj.name)
-                    print(existing, 'existing')
-                    self.logger.info(f"Processing {obj_type} '{obj.name}'")
+                    
+                    # Prepare change entry
+                    change_entry = ObjectChangeEntry(
+                        name=obj.name,
+                        type=obj_type,
+                        status=ChangeStatus.NO_CHANGE
+                    )
+                    
                     if not existing:
-                        self.logger.info(f"{obj_type.capitalize()} '{obj.name}' does not exist.")
-                        handler.create(obj, dry_run)
+                        # Object does not exist, needs creation
+                        change_entry.status = ChangeStatus.CREATED
+                        if not dry_run:
+                            handler.create(obj, dry_run)
                     else:
+                        # Object exists, check for differences
                         differences = self.find_differences(obj, existing, handler)
                         
                         if differences:
+                            # Object has differences
+                            change_entry.status = ChangeStatus.UPDATED
+                            change_entry.differences = differences
+                            
                             self.logger.warning(
                                 f"{obj_type.capitalize()} '{obj.name}' exists but has differences:"
                             )
                             for diff in differences:
                                 self.logger.warning(f"  - {diff}")
+                            
                             self.logger.warning(
                                 f"Note: {obj_type.capitalize()} properties cannot be updated directly. "
                                 f"You would need to recreate the {obj_type} to apply these changes."
                             )
-                        else:
-                            self.logger.info(
-                                f"{obj_type.capitalize()} '{obj.name}' exists and matches desired state."
-                            )
+                    
+                    # Add change entry to report
+                    change_report.add_change(obj_type, change_entry)
 
                 except Exception as e:
+                    # Handle any errors during processing
+                    error_entry = ObjectChangeEntry(
+                        name=obj.name,
+                        type=obj_type,
+                        status=ChangeStatus.ERROR,
+                        error=str(e)
+                    )
+                    change_report.add_change(obj_type, error_entry)
                     self.logger.error(f"Error processing {obj_type} '{obj.name}': {e}")
+        
+        # Log summary
+        self.logger.info("Change Report Summary:")
+        self.logger.info(change_report.summary())
+        
+        return change_report
+
+# Import handlers at the end to avoid circular imports
+from ..handlers.database import DatabaseHandler
+from ..handlers.warehouse import WarehouseHandler
+from ..models.database import SnowflakeDatabase
+from ..models.warehouse import SnowflakeWarehouse
