@@ -1,0 +1,77 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Snow-Maker Change Report</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+            .summary { display: flex; justify-content: space-around; margin-bottom: 30px; }
+            .changes { margin-top: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+        </style>
+    </head>
+    <body>
+        <h1>Snow-Maker Change Report</h1>
+        
+        <div class="summary">
+            <div>
+                <h2>Object Status</h2>
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div>
+                <h2>Summary Statistics</h2>
+                <ul>
+                    <li>Total Objects: 3</li>
+                    <li>Objects Created: 2</li>
+                    <li>Objects Updated: 1</li>
+                    <li>Objects with Errors: 0</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="changes">
+            <h2>Detailed Changes</h2>
+            <div id="databaseChanges">
+                <h3>Database Changes</h3>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr><td>ANALYTICS</td><td>database</td><td>CREATED</td></tr><tr><td>STAGING</td><td>database</td><td>CREATED</td></tr>
+                </table>
+            </div>
+            <div id="warehouseChanges">
+                <h3>Warehouse Changes</h3>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Field</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                    </tr>
+                    <tr><td rowspan="4">COMPUTE_WH</td><td>size</td><td>X-SMALL</td><td>MEDIUM</td></tr><tr><td rowspan="4">COMPUTE_WH</td><td>auto_suspend</td><td>600</td><td>300</td></tr><tr><td rowspan="4">COMPUTE_WH</td><td>auto_resume</td><td>TRUE</td><td>True</td></tr><tr><td rowspan="4">COMPUTE_WH</td><td>comment</td><td>None</td><td>GENERAL COMPUTE WAREHOUSE</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Created', 'Updated', 'No Change', 'Errors'],
+                    datasets: [{
+                        data: [2, 1, 0, 0],
+                        backgroundColor: ['green', 'orange', 'gray', 'red']
+                    }]
+                }
+            });
+        </script>
+    </body>
+    </html>
+    

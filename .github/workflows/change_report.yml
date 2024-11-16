@@ -1,0 +1,42 @@
+# trunk-ignore-all(checkov/CKV2_GHA_1)
+name: Snowflake Configuration Change Report
+
+on:
+  workflow_dispatch:  # Allow manual triggering
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  generate-change-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@5.3.0
+      with:
+        python-version: '3.9'
+        cache: pip
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install rich
+    
+    - name: Generate Change Report
+      run: |
+        python scripts/change_report_markdown_generator.py
+      
+    - name: Upload Change Report
+      uses: actions/upload-artifact@v4.4.3
+      with:
+        name: change-report
+        path: change_report.md
+        
+    - name: Add Job Summary
+      run: |
+        cat change_report.md >> $GITHUB_STEP_SUMMARY
